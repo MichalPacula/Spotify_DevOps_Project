@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="/static/data_page.css">
+  </head>
+  <body>
+    <div class="container">
+      <h1>Spotify User Account Information Extractor</h1>
+      <div class="db-data">
+        <h3>Data from database:</h3>
+        <div class="table-container">
+          <table border="1">
+            <tr>
+              <th>ID</th>
+              <th>Username</th>
+              <th>Display Name</th>
+              <th>Followers</th>
+              <th>Profile URL</th>
+            </tr>
+            {{range .}}
+            <tr>
+              <td>{{.Id}}</td>
+              <td>{{.Username}}</td>
+              <td>{{.DisplayName}}</td>
+              <td>{{.Followers}}</td>
+              <td><a href="{{.ProfileUrl}}" style="text-decoration:none;">{{.ProfileUrl}}</a></td>
+            </tr>
+            {{else}}
+            <tr>
+              <td colspan="5">No database records found</td>
+            </tr>
+            {{end}}
+          </table>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,29 @@
+services:
+  web:
+    build:
+      context: ./go
+      dockerfile: go.Dockerfile
+    ports:
+      - 80:8080
+    networks:
+        - db
+    env_file:
+      - ./go/.env
+    depends_on:
+      - db
+  db:
+    image: mysql:9.0.1
+    env_file:
+      - ./mysql/.env
+    ports:
+      - 3306:3306
+    networks:
+      - db
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+      - ./mysql/init.sql:/scripts/init.sql
+    command: "--init-file /scripts/init.sql"
+
+networks:
+  db:
+    driver: bridge

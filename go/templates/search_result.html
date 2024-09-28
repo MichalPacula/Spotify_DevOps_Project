@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="/static/search_result.css">
+  </head>
+  <body>
+
+    <div class="container">
+      <h1>Spotify User Account Information Extractor</h1>
+      
+      <form action="/search" method="POST">
+        <div class="input-box">
+          <label for="username">Username:</label>
+          <input type="text" id="username" name="username">
+          <button type="submit">Submit</button>
+        </div>
+      </form>
+
+      <div class="search-container">
+        <h3>Received data:</h3>
+        <div>Username: {{.Username}}</div>
+        <div>Display name: {{.DisplayName}}</div>
+        <div>Number of followers: {{.Followers}}</div>
+        <a href="{{.ProfileUrl}}" style="text-decoration:none;">Profile link</a>
+      </div>
+    </div>
+
+  </body>
+</html>
