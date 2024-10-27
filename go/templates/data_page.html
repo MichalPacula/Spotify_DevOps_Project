@@ -1,7 +1,7 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
-    <link rel="stylesheet" type="text/css" href="/static/data_page.css">
+    <link rel="stylesheet" type="text/css" href="/static/data_page.css" />
   </head>
   <body>
     <div class="container">
@@ -17,17 +17,52 @@
               <th>Followers</th>
               <th>Profile URL</th>
             </tr>
-            {{range .}}
+            {{range .DbData}}
             <tr>
               <td>{{.Id}}</td>
               <td>{{.Username}}</td>
               <td>{{.DisplayName}}</td>
               <td>{{.Followers}}</td>
-              <td><a href="{{.ProfileUrl}}" style="text-decoration:none;">{{.ProfileUrl}}</a></td>
+              <td>
+                <a href="{{.ProfileUrl}}" style="text-decoration: none"
+                  >{{.ProfileUrl}}</a
+                >
+              </td>
             </tr>
             {{else}}
             <tr>
               <td colspan="5">No database records found</td>
+            </tr>
+            {{end}}
+          </table>
+        </div>
+      </div>
+      <div class="redis-data">
+        <h3>Data from redis:</h3>
+        <div class="table-container">
+          <table border="1">
+            <tr>
+              <th>ID</th>
+              <th>Username</th>
+              <th>Display Name</th>
+              <th>Followers</th>
+              <th>Profile URL</th>
+            </tr>
+            {{range .RedisData}}
+            <tr>
+              <td>{{.id}}</td>
+              <td>{{.username}}</td>
+              <td>{{.displayname}}</td>
+              <td>{{.followers}}</td>
+              <td>
+                <a href="{{.profileurl}}" style="text-decoration: none"
+                  >{{.profileurl}}</a
+                >
+              </td>
+            </tr>
+            {{else}}
+            <tr>
+              <td colspan="5">No redis records found</td>
             </tr>
             {{end}}
           </table>

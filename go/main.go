@@ -1,28 +1,41 @@
 package main
 
 import (
+	"context"
+	"database/sql"
 	"fmt"
 	"html/template"
 	"log"
 	"net/http"
-	"database/sql"
 	"os"
+	"strconv"
 
 	"github.com/bmizerany/pat"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/redis/go-redis/v9"
 )
 
-type DbRow struct {
-	Id int
-	Username string
+type UserData struct {
+	Id          int
+	Username    string
 	DisplayName string
-	Followers string
-	ProfileUrl string
+	Followers   string
+	ProfileUrl  string
 }
 
-var spotifyData *SpotifyData
-var db *sql.DB
-var err error
+var (
+	spotifyData *SpotifyData
+	db          *sql.DB
+	redisdb     *redis.Client
+	err         error
+)
+
+type dataPageStruct struct {
+	DbData    []UserData
+	RedisData []map[string]string
+}
+
+var ctx = context.Background()
 
 func main() {
 	mux := pat.New()
@@ -40,6 +53,14 @@ func main() {
 		log.Fatal("Error connecting to db: ", err)
 	}
 	defer db.Close()
+
+	redisdb = redis.NewClient(&redis.Options{
+		Addr:     "redis:6379",
+		Password: "",
+		DB:       0,
+	})
+
+	fmt.Println("Created redis client")
 
 	log.Print("Listening on port 8080")
 	err := http.ListenAndServe(":8080", nil)
@@ -63,6 +84,30 @@ func getData(w http.ResponseWriter, r *http.Request) {
 	}
 	defer insert.Close()
 
+	redisUserId, err := redisdb.Incr(ctx, "user:id").Result()
+	if err != nil {
+		log.Fatal("Error generating next redis user id: ", err)
+	}
+
+	userKey := fmt.Sprintf("user:%d", int(redisUserId))
+	err = redisdb.HSet(ctx, userKey, map[string]interface{}{
+		"id":          int(redisUserId),
+		"username":    spotifyData.Username,
+		"displayname": spotifyData.DisplayName,
+		"followers":   spotifyData.Followers,
+		"profileurl":  spotifyData.ProfileUrl,
+	}).Err()
+	if err != nil {
+		log.Fatal("Error inserting user data to redis: ", err)
+	}
+
+	err = redisdb.RPush(ctx, "user_ids", int(redisUserId)).Err()
+	if err != nil {
+		log.Fatal("Error inserting user id to redis: ", err)
+	}
+
+	fmt.Println("Inserted data to redis")
+
 	http.Redirect(w, r, "/searchResult", http.StatusSeeOther)
 }
 
@@ -73,19 +118,50 @@ func searchResult(w http.ResponseWriter, r *http.Request) {
 func dataPage(w http.ResponseWriter, r *http.Request) {
 	dbResults, err := db.Query("SELECT * FROM spotify_data ORDER BY id DESC LIMIT 5")
 
-	var dbResultsArray []DbRow
+	var dbResultsArray []UserData
 	if err != nil {
 		log.Fatal("Error querying db for top 5 results: ", err)
 	}
 	for dbResults.Next() {
-		var dbRow DbRow
+		var dbRow UserData
 		err := dbResults.Scan(&dbRow.Id, &dbRow.Username, &dbRow.DisplayName, &dbRow.Followers, &dbRow.ProfileUrl)
 		if err != nil {
 			log.Fatal("Error assigning values from dbResults to dbRow: ", err)
 		}
+
 		dbResultsArray = append(dbResultsArray, dbRow)
 	}
-	render(w, "templates/data_page.html", dbResultsArray)
+
+	latestUserIDs, err := redisdb.LRange(ctx, "user_ids", -5, -1).Result()
+	if err != nil {
+		log.Fatal("Error retrieving user ids from redis: ", err)
+	}
+
+	var redisResultsArray []map[string]string
+	for _, idStr := range latestUserIDs {
+		userID, err := strconv.Atoi(idStr)
+		if err != nil {
+			log.Fatal("Error converting user id to int: ", err)
+		}
+
+		userKey := fmt.Sprintf("user:%d", userID)
+		userData, err := redisdb.HGetAll(ctx, userKey).Result()
+		if err != nil {
+			log.Fatal("Error retrieving user data from redis: ", err)
+		}
+
+		redisResultsArray = append(redisResultsArray, userData)
+	}
+
+	fmt.Println(redisResultsArray)
+	fmt.Println("Retrievied data from redis")
+
+	dataPageData := dataPageStruct{
+		DbData:    dbResultsArray,
+		RedisData: redisResultsArray,
+	}
+
+	render(w, "templates/data_page.html", dataPageData)
 }
 
 func render(w http.ResponseWriter, filename string, data interface{}) {

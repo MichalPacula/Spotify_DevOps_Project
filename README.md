@@ -5,7 +5,7 @@ Tools and programming languages used:
 <ul>
 <li>Go</li>
 <li>MySQL</li>
-<li>Redis (not yet done)</li>
+<li>Redis</li>
 <li>Docker</li>
 <li>Kubernetes (not yet done)</li>
 <li>Helm (not yet done)</li>

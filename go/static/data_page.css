@@ -1,48 +1,51 @@
-html, body {
-    height: 100%;
-    margin: 0;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
+html,
+body {
+  height: 100%;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
 }
 
 body {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
 }
 
 .container {
-    text-align: center;
-    width: 600px;
-    margin-top: 20px;
+  text-align: center;
+  width: 600px;
+  margin-top: 20px;
 }
 
 h1 {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
-.db-data {
-    display: block;
-    margin-bottom: 20px;
+.db-data,
+.redis-data {
+  display: block;
+  margin-bottom: 20px;
 }
 
 .table-container {
-    display: flex;
-    justify-content: center;
+  display: flex;
+  justify-content: center;
 }
 
 table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
 }
 
-th, td {
-    padding: 10px;
-    text-align: center;
+th,
+td {
+  padding: 10px;
+  text-align: center;
 }
 
 a:visited {
-    color: blue;
+  color: blue;
 }

@@ -1,3 +1,4 @@
+---
 services:
   web:
     build:
@@ -6,15 +7,17 @@ services:
     ports:
       - 80:8080
     networks:
-        - db
+      - db
+      - redis
     env_file:
-      - ./go/.env
+      - ./go/go.env
     depends_on:
       - db
+      - redis
   db:
     image: mysql:9.0.1
     env_file:
-      - ./mysql/.env
+      - ./mysql/mysql.env
     ports:
       - 3306:3306
     networks:
@@ -23,7 +26,15 @@ services:
       - ./mysql_data:/var/lib/mysql
       - ./mysql/init.sql:/scripts/init.sql
     command: "--init-file /scripts/init.sql"
+  redis:
+    image: redis:7.4.1-alpine
+    networks:
+      - redis
+    ports:
+      - 6379:6379
 
 networks:
   db:
+    driver: bridge
+  redis:
     driver: bridge
