@@ -29,6 +29,7 @@ func TestDbConnection(t *testing.T) {
 		t.Errorf("Error connecting to db: %s", err)
 	}
 	defer db.Close()
+
 	time.Sleep(5 * time.Second)
 	_, err := db.Query("SHOW TABLES")
 	if err != nil {

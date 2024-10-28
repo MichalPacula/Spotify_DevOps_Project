@@ -38,7 +38,11 @@ type dataPageStruct struct {
 var ctx = context.Background()
 
 func main() {
-	SetupDatabase()
+	db, err = sql.Open("mysql", fmt.Sprintf("root:%s@tcp(db:3306)/spotify_data_db", os.Getenv("MYSQL_ROOT_PASSWORD")))
+	if err != nil {
+		log.Fatal("Error connecting to db: ", err)
+	}
+	defer db.Close()
 
 	SetupRedis()
 
@@ -61,14 +65,6 @@ func SetupHttpServer() {
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-func SetupDatabase() {
-	db, err = sql.Open("mysql", fmt.Sprintf("root:%s@tcp(db:3306)/spotify_data_db", os.Getenv("MYSQL_ROOT_PASSWORD")))
-	if err != nil {
-		log.Fatal("Error connecting to db: ", err)
-	}
-	defer db.Close()
 }
 
 func SetupRedis() {
@@ -116,8 +112,6 @@ func getData(w http.ResponseWriter, r *http.Request) {
 		log.Fatal("Error inserting user id to redis: ", err)
 	}
 
-	fmt.Println("Inserted data to redis")
-
 	http.Redirect(w, r, "/searchResult", http.StatusSeeOther)
 }
 
@@ -162,9 +156,6 @@ func dataPage(w http.ResponseWriter, r *http.Request) {
 
 		redisResultsArray = append(redisResultsArray, userData)
 	}
-
-	fmt.Println(redisResultsArray)
-	fmt.Println("Retrievied data from redis")
 
 	dataPageData := dataPageStruct{
 		DbData:    dbResultsArray,
