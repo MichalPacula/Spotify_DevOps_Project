@@ -1,0 +1,40 @@
+---
+services:
+  web:
+    build:
+      context: ./go
+      dockerfile: go_test.Dockerfile
+    ports:
+      - 80:8080
+    networks:
+      - db
+      - redis
+    env_file:
+      - ./go/go.env
+    depends_on:
+      - db
+      - redis
+  db:
+    image: mysql:9.0.1
+    env_file:
+      - ./mysql/mysql.env
+    ports:
+      - 3306:3306
+    networks:
+      - db
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+      - ./mysql/init.sql:/scripts/init.sql
+    command: "--init-file /scripts/init.sql"
+  redis:
+    image: redis:7.4.1-alpine
+    networks:
+      - redis
+    ports:
+      - 6379:6379
+
+networks:
+  db:
+    driver: bridge
+  redis:
+    driver: bridge

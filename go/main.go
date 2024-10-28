@@ -38,6 +38,14 @@ type dataPageStruct struct {
 var ctx = context.Background()
 
 func main() {
+	SetupDatabase()
+
+	SetupRedis()
+
+	SetupHttpServer()
+}
+
+func SetupHttpServer() {
 	mux := pat.New()
 	mux.Get("/", http.HandlerFunc(index))
 	mux.Post("/search", http.HandlerFunc(getData))
@@ -48,25 +56,27 @@ func main() {
 	http.Handle("/static/", http.StripPrefix("/static", fs))
 	http.Handle("/", mux)
 
-	db, err = sql.Open("mysql", fmt.Sprintf("root:%s@tcp(db:3306)/spotify_data_db", os.Getenv("MYSQL_ROOT_PASSWORD")))
-	if err != nil {
-		log.Fatal("Error connecting to db: ", err)
-	}
-	defer db.Close()
-
-	redisdb = redis.NewClient(&redis.Options{
-		Addr:     "redis:6379",
-		Password: "",
-		DB:       0,
-	})
-
-	fmt.Println("Created redis client")
-
 	log.Print("Listening on port 8080")
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func SetupDatabase() {
+	db, err = sql.Open("mysql", fmt.Sprintf("root:%s@tcp(db:3306)/spotify_data_db", os.Getenv("MYSQL_ROOT_PASSWORD")))
+	if err != nil {
+		log.Fatal("Error connecting to db: ", err)
+	}
+	defer db.Close()
+}
+
+func SetupRedis() {
+	redisdb = redis.NewClient(&redis.Options{
+		Addr:     "redis:6379",
+		Password: "",
+		DB:       0,
+	})
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
