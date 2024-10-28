@@ -10,6 +10,7 @@ Tools and programming languages used:
 <li>Kubernetes (not yet done)</li>
 <li>Helm (not yet done)</li>
 <li>Jenkins (not yet done)</li>
+<li>Ansible (maybe)(not yet done)</li>
 <li>Terraform (not yet done)</li>
 <li>AWS (not yet done)</li>
 <li>ArgoCD (maybe)(not yet done)</li>
